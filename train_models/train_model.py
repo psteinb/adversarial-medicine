@@ -68,9 +68,11 @@ def load_data(batch_size, mixup, vFlip, rotation):
         n_data = (train_generator.n, validation_generator.n)
     return (train_generator, validation_generator, n_data)
 
-def construct_model(inceptionModel, batch_size, LR, freezeEarlyLayers = False):
+def construct_model(inceptionModel, batch_size, LR, freezeEarlyLayers = False, ngpus=1):
     from keras.layers import Activation, Dropout, Flatten, Dense, GlobalAveragePooling2D
     from keras.models import Model
+    from keras.utils import multi_gpu_model
+
     from keras import optimizers
 
     ## Data Generators 
@@ -97,6 +99,8 @@ def construct_model(inceptionModel, batch_size, LR, freezeEarlyLayers = False):
         for layer in model.layers[:25]:
             layer.trainable = False
 
+    if ngpus >= 2:
+        model = multi_gpu_model(model, gpus=ngpus)
     # Compile Model
     model.compile(optimizer = optimizers.SGD(lr=LR, momentum=0.9),
                   loss='categorical_crossentropy', metrics=['accuracy'])
@@ -183,7 +187,8 @@ if __name__ == '__main__':
     parser.add_argument("--min_epochs", type=int, default=200, help="Number of epochs to run before checkpoint or early stopping (default: 200)")
     parser.add_argument("--batch_size", type=int, default=32, help="Batch size  (default: 32)")
     parser.add_argument("--nameAppend", type=str, default="", help="Add-on to name")
-    parser.add_argument("--gpu1", action='store_true', default=False, help="Use GPU 1, else use GPU zero")
+    #parser.add_argument("--gpu1", action='store_true', default=False, help="Use GPU 1, else use GPU zero")
+    parser.add_argument("--ngpu", action='store', default=1, type=int, help="Use GPU 1, else use GPU zero")
     parser.add_argument("--mixup", action='store_true', default=False, help="Use mixup for data processing")
     parser.add_argument("--vFlip", action='store_true', default=False, help="Vertical Flipping during data aug")
     parser.add_argument("--rotation", type=int, default=45,  help="Degree of rotation during data aug")
@@ -203,11 +208,11 @@ if __name__ == '__main__':
     rotation = args.rotation
 
     # Set CUDA Device Using Flag
-    os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID" 
-    if args.gpu1:
-        os.environ["CUDA_VISIBLE_DEVICES"]="1"
-    else:
-        os.environ["CUDA_VISIBLE_DEVICES"]="0"
+    #os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+    # if args.gpu1:
+    #     os.environ["CUDA_VISIBLE_DEVICES"]="1"
+    # else:
+    #     os.environ["CUDA_VISIBLE_DEVICES"]="0"
 
     # Handle checkpointing and early stopping
     modelChecking = (modelCheckpointPeriod >= 0)
@@ -238,7 +243,7 @@ if __name__ == '__main__':
 
     # Train the model
     train_generator, validation_generator, n_data = load_data(batch_size, mixup, vFlip, rotation)
-    model = construct_model(inceptionModel, batch_size, LR)
+    model = construct_model(inceptionModel, batch_size, LR, args.ngpus)
     callbacks = generateCallbacks(inceptionModel, nameAppend, LR, modelChecking, modelCheckpointPeriod, earlyStopping, earlyStopPatience)
     model = fit_model(model, callbacks, train_generator, validation_generator, n_data, batch_size, max_epochs, n_epoch_beforeSaving)
     model.save_weights(model_name)
