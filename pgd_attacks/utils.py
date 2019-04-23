@@ -51,6 +51,35 @@ def display_adv_examples(imgNum, X_test_adv,
     img.set_cmap('hot')
     plt.axis('off')
     plt.show()
+
+def plot_to_compare(image, adversarial):
+    if isinstance(adversarial, type(None)):
+        print('empty/none adversarial found, doing nothing')
+        return 1
+        
+    plt.figure()
+    print("True Image Deprocessed:")
+    img = plt.imshow(deprocess_inception(image))
+    img.set_cmap('hot')
+    plt.axis('off')
+    plt.show()
+
+    print("Adversarial Image Deprocessed:")
+    plt.figure()
+    img = plt.imshow(deprocess_inception(adversarial))
+    img.set_cmap('hot')
+    plt.axis('off')
+    plt.show()
+
+    diff = image - adversarial
+    print("Perturbation*20:")
+    plt.figure()
+    img = plt.imshow(deprocess_inception(diff*20))
+    img.set_cmap('hot')
+    plt.axis('off')
+    plt.show()
+    
+    print(np.histogram(diff))
     
 def getResults(directory, save = False):
     X_test = np.load(os.path.join(directory, 'data/val_test_x_preprocess.npy'), mmap_mode = "r")
