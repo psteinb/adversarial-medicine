@@ -51,8 +51,12 @@ def display_adv_examples(imgNum, X_test_adv,
     img.set_cmap('hot')
     plt.axis('off')
     plt.show()
+    
+    return
 
-def plot_to_compare(image, adversarial):
+
+def plot_to_compare(image, adversarial, aux_image=None):
+    
     if isinstance(adversarial, type(None)):
         print('empty/none adversarial found, doing nothing')
         return 1
@@ -71,6 +75,14 @@ def plot_to_compare(image, adversarial):
     plt.axis('off')
     plt.show()
 
+    if not isinstance(aux_image, type(None)):
+        print("Aux Image Deprocessed:")
+        plt.figure()
+        img = plt.imshow(deprocess_inception(aux_image))
+        img.set_cmap('hot')
+        plt.axis('off')
+        plt.show()
+    
     diff = image - adversarial
     print("Perturbation*20:")
     plt.figure()
