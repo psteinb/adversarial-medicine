@@ -46,6 +46,7 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         print("usage: python3 cropped_size.py <file> (<files> ...)")
         print("       produces a csv file with shape[0],shape[1],cropped[0],cropped[1],name")
+        print("       by default uses all cores of the machine it is running on")
         sys.exit(1)
         
     outcsv = open("output.csv","w")
