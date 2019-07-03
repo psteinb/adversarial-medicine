@@ -26,7 +26,7 @@ import numpy as np
 def load_data(batch_size, mixup, vFlip, rotation):
     from keras.preprocessing.image import ImageDataGenerator
     from keras.applications.inception_resnet_v2 import preprocess_input
-
+    #https://keras.io/preprocessing/image/#imagedatagenerator-class
     train_datagen = ImageDataGenerator(
             shear_range=0.2,
             zoom_range=0.2,
@@ -78,6 +78,9 @@ def construct_model(inceptionModel, batch_size, LR, freezeEarlyLayers = False, n
     ## Data Generators 
 
     # Base Model
+    # https://github.com/keras-team/keras-contrib/blob/master/keras_contrib/applications/resnet.py
+    # or 
+    # https://github.com/keras-team/keras/blob/master/keras/applications/inception_v3.py
     if inceptionModel:
         from keras.applications.inception_v3 import InceptionV3
         base_model = InceptionV3(weights='imagenet', include_top = True)
