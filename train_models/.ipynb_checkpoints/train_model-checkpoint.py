@@ -26,8 +26,6 @@ import numpy as np
 def load_data(batch_size, mixup, vFlip, rotation, target_shape=(224,224)):
     from keras.preprocessing.image import ImageDataGenerator
     from keras.applications.inception_resnet_v2 import preprocess_input
-
-    preprocess_input_fct = preprocess_input if target_shape == (224,224) else None
     #https://keras.io/preprocessing/image/#imagedatagenerator-class
     train_datagen = ImageDataGenerator(
             shear_range=0.2,
@@ -35,11 +33,11 @@ def load_data(batch_size, mixup, vFlip, rotation, target_shape=(224,224)):
             rotation_range=rotation,
             width_shift_range = 0.2,
             height_shift_range = 0.2,
-            preprocessing_function=preprocess_input_fct,
+            preprocessing_function=preprocess_input,
             horizontal_flip=True,
             vertical_flip=vFlip)
 
-    test_datagen = ImageDataGenerator(preprocessing_function=preprocess_input_fct)
+    test_datagen = ImageDataGenerator(preprocessing_function=preprocess_input)
 
     # Mixup
     if mixup:
@@ -56,15 +54,13 @@ def load_data(batch_size, mixup, vFlip, rotation, target_shape=(224,224)):
             target_size=target_shape,
             batch_size=batch_size,
             class_mode='categorical',
-            shuffle=True,
-        follow_links=True)
+            shuffle=True)
         validation_generator = test_datagen.flow_from_directory(
             'images/val',
             target_size=target_shape,
             batch_size=batch_size,
             class_mode='categorical',
-            shuffle=True,
-        follow_links=True)
+            shuffle=True)
 
     if mixup:
         n_data = (X_train.shape[0], X_test.shape[0])
